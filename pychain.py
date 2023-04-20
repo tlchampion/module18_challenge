@@ -50,6 +50,7 @@ import hashlib
 # Create a Record Data Class that consists of the `sender`, `receiver`, and
 # `amount` attributes
 # YOUR CODE HERE
+# define the Record class to store transaction details (sender, receiver, amount)
 @dataclass
 class Record:
 
@@ -73,7 +74,10 @@ class Block:
 
     # @TODO
     # Rename the `data` attribute to `record`, and set the data type to `Record`
-    data: Any
+    # block will hold transaction details by storing a Record object with the sender, receiver and amount
+    # along with details on who created the block and when
+    # as well as the hash value for the previous block
+    record: Record
 
     creator_id: int
     prev_hash: str = "0"
@@ -143,8 +147,11 @@ class PyChain:
 
 # Adds the cache decorator for Streamlit
 
+# updating cache decorator to new caching command. @st.cache is deprecated in Streamlit version 1.21.0
+# @st.cache(allow_output_mutation=True)
 
-@st.cache(allow_output_mutation=True)
+
+@st.cache_resource()
 def setup():
     print("Initializing Chain")
     return PyChain([Block("Genesis", 0)])
@@ -171,19 +178,23 @@ pychain = setup()
 
 # @TODO:
 # Delete the `input_data` variable from the Streamlit interface.
-input_data = st.text_input("Block Data")
+
 
 # @TODO:
 # Add an input area where you can get a value for `sender` from the user.
 # YOUR CODE HERE
-
+# collect info on the sender
+sender = st.text_input("Sender")
 # @TODO:
 # Add an input area where you can get a value for `receiver` from the user.
 # YOUR CODE HERE
-
+# collect info on the receiver
+receiver = st.text_input("Receiver")
 # @TODO:
 # Add an input area where you can get a value for `amount` from the user.
 # YOUR CODE HERE
+# collect 'amount' of transaction.
+amount = st.number_input("Amount")
 
 if st.button("Add Block"):
     prev_block = pychain.chain[-1]
@@ -194,7 +205,7 @@ if st.button("Add Block"):
     # which is set equal to a `Record` that contains the `sender`, `receiver`,
     # and `amount` values
     new_block = Block(
-        data=input_data,
+        record=Record(sender, receiver, amount),
         creator_id=42,
         prev_hash=prev_block_hash
     )
@@ -219,9 +230,12 @@ selected_block = st.sidebar.selectbox(
 )
 
 st.sidebar.write(selected_block)
-
+# display validation message for blockchain when validation button is clicked
 if st.button("Validate Chain"):
-    st.write(pychain.is_valid())
+    if pychain.is_valid():
+        st.write("Blockchain is Valid")
+    else:
+        st.write("Warning: Blockchain IS NOT Valid")
 
 ################################################################################
 # Step 4:
